@@ -1,165 +1,123 @@
 ﻿using Dumpify;
 using NMC.Model;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace NMC.Utils;
 
-public record VBAnalyzer(
-    string frameAnalysis, Dictionary<string, List<string>> vbFileDict, ObservableCollection<DrawIB> drawIBList)
+public record VBAnalyzer(string frameAnalysis, Dictionary<string, List<string>> vbFiles, ObservableCollection<DrawIB> drawIBList)
 {
-    public void VBFileAnalysis()
+    private FileStreamBuilder streamBuilder = new FileStreamBuilder();
+
+    public void Analyze()
     {
-        foreach (var drawIB in drawIBList)
-        {
-            List<string> vbFiles = vbFileDict[drawIB.IBHash];
-            Dictionary<string, Dictionary<string, List<string>>> resultDict = new Dictionary<string, Dictionary<string, List<string>>>();
-            foreach (var file in vbFiles)
-            {
-                Dictionary<string, List<string>> strideInputElementBlock = new Dictionary<string, List<string>>();
-                if (!Path.GetExtension(file).Equals(".txt"))
-                    continue;
-
-                string vbFile = Path.Combine(frameAnalysis, file);
-                Dictionary<string, string> semanticNameDict = GetCorrectSemantics(vbFile);
-                semanticNameDict.Dump();
-                string stride = GetVBFileStride(vbFile);
-                string vertexCount = GetVertexCount(vbFile);
-                List<string> inputElementBlock = GetCorrectInputElementBlock(vbFile, semanticNameDict);
-
-                if (!strideInputElementBlock.ContainsKey(stride))
-                    strideInputElementBlock.Add(stride, inputElementBlock);
-
-                if (!strideInputElementBlock.ContainsKey(file))
-                    resultDict.Add(file, strideInputElementBlock);
-
-                SemanticBlockAnalyzer(resultDict);
-            }
-        }
+        Dictionary<string, string> strides = GetVBFileStride();
+        Dictionary<string, string> vertexCounts = GetVBFileVertexCount();
+        GetVBFileCorrectSemanticName();
     }
-
-    private Dictionary<string, string> GetCorrectSemantics(string vbFile)
+   
+    /// <summary>
+    /// 获取VB文件中stride字段的值
+    /// </summary>
+    /// <returns>由文件名为Key, stride字段的值为Value的字典</returns>
+    private Dictionary<string, string> GetVBFileStride()
     {
-        using (FileStream fs = new FileStream(vbFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+        Dictionary<string, string> strides = new Dictionary<string, string>();
+
+        foreach (var ibHash in vbFiles.Keys)
         {
-            StreamReader sr = new StreamReader(fs);
-            Dictionary<string, string> vertexDataDict = new Dictionary<string, string>();
-            List<string> vbContentList = new List<string>();
-            Dictionary<string, string> semanticNameDict = new Dictionary<string, string>();
-            string? line;
-            while ((line = sr.ReadLine()) != null)
+            foreach (var vbFile in vbFiles[ibHash])
             {
-                if (string.IsNullOrEmpty(line))
-                    continue;
-
-                vbContentList.Add(line);
-            }
-
-            for (int index = vbContentList.IndexOf("vertex-data:") + 1; index < vbContentList.Count; index++)
-            {
-                string semanticName = vbContentList[index].Split(": ")[0].Split(" ")[1];
-                string semanticValue = vbContentList[index].Split(": ")[1];
-                if (!vertexDataDict.ContainsKey(semanticName) && !vertexDataDict.ContainsValue(semanticValue))
+                using (var fs = streamBuilder.GetFileStream(Path.Combine(frameAnalysis, vbFile)))
                 {
-                    vertexDataDict.Add(semanticName, semanticValue);
-                }
-                else
-                {
-                    break;
+                    StreamReader sr = new StreamReader(fs);
+                    strides.Add(vbFile, sr.ReadLine()!.Split(": ")[1]);
                 }
             }
-
-            foreach (var semanticName in vertexDataDict.Keys)
-            {
-                string[] semantics = semanticName.Substring(0).Split("D");
-                if (semantics.Length < 2 || string.IsNullOrEmpty(semantics[1]))
-                {
-                    semanticNameDict.Add(semanticName, "0");
-                }
-                else
-                {
-                    semanticNameDict.Add(semanticName, semantics[1]);
-                }
-            }
-
-            return semanticNameDict;
         }
+
+        return strides;
     }
 
-    private string GetVBFileStride(string vbFile)
+    /// <summary>
+    /// 获取VB文件中vertex count字段的值
+    /// </summary>
+    private Dictionary<string, string> GetVBFileVertexCount()
     {
-        using (FileStream fs = new FileStream(vbFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+        Dictionary<string, string> vertexCounts = new Dictionary<string, string>();
+
+        foreach (var ibHash in vbFiles.Keys)
         {
-            StreamReader sr = new StreamReader(fs);
-            string line = sr.ReadLine()!;
-
-            return line.Split(": ")[1];
-        }
-    }
-
-    private string GetVertexCount(string vbFile)
-    {
-        using (FileStream fs = new FileStream(vbFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            StreamReader sr = new StreamReader(fs);
-            string line = "";
-            for (int i = 0; i < 3; i++)
+            foreach (var vbFile in vbFiles[ibHash])
             {
-                line = sr.ReadLine()!;
-            }
-
-            return line.Split(": ")[1];
-        }
-    }
-
-    private List<string> GetCorrectInputElementBlock(string vbFile, Dictionary<string, string> semanticNameDict)
-    {
-        Dictionary<int, Dictionary<string, string>> elementDict = new Dictionary<int, Dictionary<string, string>>();
-        List<string> vbContentList = new List<string>();
-        List<string> inputElementBlock = new List<string>();
-        using (FileStream fs = new FileStream(vbFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            StreamReader sr = new StreamReader(fs);
-            string? line;
-            while ((line = sr.ReadLine()) != null)
-            {
-                if (string.IsNullOrEmpty(line))
-                    continue;
-
-                vbContentList.Add(line);
-            }
-
-            int endIndex = vbContentList.IndexOf("vertex-data:");
-
-            for (int i = 0; i < endIndex - 1; i++)
-            {
-                foreach (var semanticName in semanticNameDict.Keys)
+                using (var fs = streamBuilder.GetFileStream(Path.Combine(frameAnalysis, vbFile)))
                 {
-                    if (vbContentList[i].Contains($"SemanticName: {semanticName}")
-                        && vbContentList[i + 1].Contains($"SemanticIndex: {semanticNameDict[semanticName]}"))
+                    StreamReader sr = new StreamReader(fs);
+                    string line;
+                    while ((line = sr.ReadLine()!) is not null)
                     {
-                        for (int j = i; j <= i + 6; j++)
+                        if (line.StartsWith("vertex count:"))
                         {
-                            inputElementBlock.Add(vbContentList[j].TrimStart());
+                            vertexCounts.Add(vbFile, line.Split(": ")[1]);
+                            break;
                         }
                     }
                 }
             }
-
-            return inputElementBlock;
         }
+
+        return vertexCounts;
     }
 
-    private void SemanticBlockAnalyzer(Dictionary<string, Dictionary<string, List<string>>> analyzeSource)
+    /// <summary>
+    /// 获取VB文件中正确的语义名称
+    /// </summary>
+    /// <returns>由文件名为Key, 正确的语义名称列表为Value的字典</returns>
+    private List<Dictionary<string, Dictionary<string, string>>> GetVBFileCorrectSemanticName()
     {
-        foreach (var file in analyzeSource.Keys)
+        // 用于存储所有正确的语义组合成的字典
+        List<Dictionary<string, Dictionary<string, string>>> semanticList = new List<Dictionary<string, Dictionary<string, string>>>();
+        foreach (var ibHash in vbFiles.Keys)
         {
-            var inputElementBlock = analyzeSource[file];
-            foreach (var stride in analyzeSource[file].Keys)
+            // 用于存储文件对应的语义
+            Dictionary<string, Dictionary<string, string>> fileSemanticMap = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var vbFile in vbFiles[ibHash])
             {
-                inputElementBlock[stride].Dump();
+                List<string> contentList = new List<string>();
+                Dictionary<string, string> semantics = new Dictionary<string, string>();
+                using (var fs = streamBuilder.GetFileStream(Path.Combine(frameAnalysis, vbFile)))
+                {
+                    StreamReader sr = new StreamReader(fs);
+                    string? line;
+                    while ((line = sr.ReadLine()) is not null)
+                    {
+                        if (string.IsNullOrEmpty(line))
+                            continue;
+
+                        contentList.Add(line.Trim());
+                    }
+                }
+
+                for (int i = contentList.IndexOf("vertex-data:") + 1; i < contentList.Count; i++)
+                {
+                    string semanticName = contentList[i].Split(": ")[0].Split(" ")[1];
+                    string semanticValue = contentList[i].Split(": ")[1];
+                    if (!semantics.ContainsKey(semanticName) && !semantics.ContainsValue(semanticValue))
+                    {
+                        semantics.Add(semanticName, semanticValue);
+                        if (!fileSemanticMap.ContainsKey(vbFile))
+                            fileSemanticMap.Add(vbFile, semantics);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
+            semanticList.Add(fileSemanticMap);
         }
+
+        return semanticList;
     }
 }

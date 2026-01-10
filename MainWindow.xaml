@@ -50,7 +50,7 @@
             CanUserSortColumns="False"
             HeadersVisibility="Column"
             IsReadOnly="False"
-            ItemsSource="{Binding IBList}">
+            ItemsSource="{Binding DrawIBList}">
 
             <DataGrid.Columns>
                 <DataGridTextColumn Width="*" Binding="{Binding IBHash}" Header="DrawIB">

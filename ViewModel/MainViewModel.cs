@@ -12,25 +12,25 @@ namespace NMC;
 
 public partial class MainViewModel : ObservableObject
 {
-    public ObservableCollection<DrawIB> IBList { get; } = new ObservableCollection<DrawIB>();
+    public ObservableCollection<DrawIB> DrawIBList { get; } = new ObservableCollection<DrawIB>();
     public FrameAnalysis FrameAnalysis { get; } = new FrameAnalysis();
-    private Dictionary<string, List<string>> _ibDrawCallDict = new Dictionary<string, List<string>>();
-    private Dictionary<string, List<string>>? _vbFileDict = new Dictionary<string, List<string>>();
+    private Dictionary<string, List<string>> _ibDrawCalls = new Dictionary<string, List<string>>();
+    private Dictionary<string, List<string>>? _vbFiles = new Dictionary<string, List<string>>();
 
     [RelayCommand]
     void ExtractModel()
     {
         Log.Info(":: 模型提取开始 ::");
 
-        if (IBList.Count <= 0)
+        if (DrawIBList.Count <= 0)
         {
-            IBList.Add(new DrawIB
+            DrawIBList.Add(new DrawIB
             {
                 IBHash = "ef4cce2d",
                 Alias = "TestModelBody"
             });
 
-            IBList.Add(new DrawIB
+            DrawIBList.Add(new DrawIB
             {
                 IBHash = "f35cf9af",
                 Alias = "TestModelHair"
@@ -39,14 +39,14 @@ public partial class MainViewModel : ObservableObject
 
         FrameAnalysis.FrameAnalysisPath = @"E:\XXMI Launcher\GIMI\FrameAnalysis-2026-01-08-203940";
 
-        if (IBList.Count == 0)
+        if (DrawIBList.Count == 0)
         {
             Log.Info("DrawIB为空, 提取结束!");
             MessageBox.Show("DrawIB不能为空!!!");
             return;
         }
 
-        foreach (DrawIB drawIB in IBList)
+        foreach (DrawIB drawIB in DrawIBList)
         {
             if (string.IsNullOrEmpty(drawIB.IBHash))
             {
@@ -72,7 +72,7 @@ public partial class MainViewModel : ObservableObject
 
         Log.Info(":: 开始收集 DrawIB 的绘制调用 ::");
         DrawCallCollector drawCallCollector = new DrawCallCollector(FrameAnalysis.FrameAnalysisPath);
-        foreach (var drawIB in IBList)
+        foreach (var drawIB in DrawIBList)
         {
             Log.Info($"当前DrawIB: {drawIB.IBHash}");
             List<string>? ibDrawCall = drawCallCollector.CollectIBDrawCall(drawIB.IBHash);
@@ -82,14 +82,14 @@ public partial class MainViewModel : ObservableObject
                 continue;
             }
 
-            if (!_ibDrawCallDict.ContainsKey(drawIB.IBHash))
+            if (!_ibDrawCalls.ContainsKey(drawIB.IBHash))
             {
                 ibDrawCall.ForEach(d => Log.Info($"绘制调用: {d}"));
-                _ibDrawCallDict.Add(drawIB.IBHash, ibDrawCall);
+                _ibDrawCalls.Add(drawIB.IBHash, ibDrawCall);
             }
         }
 
-        if (_ibDrawCallDict.Count <= 0)
+        if (_ibDrawCalls.Count <= 0)
         {
             MessageBox.Show("未找到任何 IB 对应的 DrawCall 提取失败!", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             Log.Err(":: 未找到任何 IB 对应的 DrawCall 提取失败! ::" + Environment.NewLine + "请检查 \"FrameAnalysis\" 文件夹是否存在 \'******-ib=********\' 一类的文件");
@@ -98,24 +98,22 @@ public partial class MainViewModel : ObservableObject
         Log.Info(":: DrawIB 的绘制调用收集结束 ::");
 
         Log.Info(":: 开始收集绘制调用对应的 VB 文件 ::");
-        VBCollector vbCollector = new VBCollector(FrameAnalysis.FrameAnalysisPath, _ibDrawCallDict);
-        _vbFileDict = vbCollector.CollectVBFile();
-        if (_vbFileDict == null)
+        VBCollector vbCollector = new VBCollector(FrameAnalysis.FrameAnalysisPath, _ibDrawCalls);
+        _vbFiles = vbCollector.CollectVBFile();
+        if (_vbFiles == null)
         {
             MessageBox.Show("未找到绘制调用对应的任何 VB 文件 提取失败!", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             Log.Err(":: 未找到绘制调用对应的任何 VB 文件 提取失败! ::" + Environment.NewLine + "请检查 \"FrameAnalysis\" 文件夹是否存在 \'******-vb{number}=********\' 一类的文件");
             return;
         }
         Log.Info(":: 收集绘制调用对应的 VB 文件结束 ::");
-        _ibDrawCallDict.Dump();
-        _vbFileDict.Dump();
         Log.Info(":: 开始分析 VB 文件::");
-        VBAnalyzer vbAnalyzer = new VBAnalyzer(FrameAnalysis.FrameAnalysisPath, _vbFileDict, IBList);
+        VBAnalyzer vbAnalyzer = new VBAnalyzer(FrameAnalysis.FrameAnalysisPath, _vbFiles, DrawIBList);
         // TODO: 现在的想法是先从 vertex-data 开始读取，每读取一行就格式化一下字符串以语义名称为Key，数据为Value存入字典内，
         //       如果继续读取的语义的数据已经存在于字典，那就可以结束读取了，这样就拿到了正确的语义名称，再通过正确的语义去解析语义格式，
         //       但是这样会有一个小bug，如果遇到数据完全没有重复的 vb 文件，就会导致一直读取到文件末尾，虽然不怎么影响，但是还是需要解决此问题
         //       解决方案：可以在读取时用字典去存，每次都做两个判断，先判断语义值是否存在，再判断语义名是否存在，如果有语义名相同，值不同，也会停止读取
-        vbAnalyzer.VBFileAnalysis();
+        vbAnalyzer.Analyze();
     }
 
     [RelayCommand]

@@ -19,7 +19,7 @@ public record VBCollector(string frameAnalysis, Dictionary<string, List<string>>
             {
                 foreach (var file in Directory.GetFiles(frameAnalysis).ToList())
                 {
-                    if (file.Contains($"{drawCall}-vb"))
+                    if (file.Contains($"{drawCall}-vb") && Path.GetExtension(file).Equals(".txt"))
                     {
                         vbList.Add(Path.GetFileName(file));
                         Log.Info($"绘制调用: {drawCall} 对应的 VB 文件: {Path.GetFileName(file)}");
