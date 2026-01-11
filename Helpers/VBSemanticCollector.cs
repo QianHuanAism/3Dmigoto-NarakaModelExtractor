@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace NMC.Helpers;
 
-public record VBSemanticCollector(string frameAnalysis, Dictionary<string, List<string>> vbFiles)
+public class VBSemanticCollector(string frameAnalysis, Dictionary<string, List<string>> vbFiles)
 {
     private StreamBuilder streamBuilder = new StreamBuilder();
 

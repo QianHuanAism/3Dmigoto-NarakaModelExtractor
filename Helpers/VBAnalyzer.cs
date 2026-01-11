@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace NMC.Helpers;
 
-public record VBAnalyzer(string frameAnalysis, Dictionary<string, List<string>> vbFiles)
+public class VBAnalyzer(string frameAnalysis, Dictionary<string, List<string>> vbFiles)
 {
     private VBStrideCollector strideCollector = new VBStrideCollector(frameAnalysis, vbFiles);
     private VBVertexCountCollector vertexCountCollector = new VBVertexCountCollector(frameAnalysis, vbFiles);

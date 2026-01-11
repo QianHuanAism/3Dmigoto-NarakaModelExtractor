@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NMC.Helpers;
 
-public record VBCollector(string frameAnalysis, Dictionary<string, List<string>> ibDrawCallDict)
+public class VBCollector(string frameAnalysis, Dictionary<string, List<string>> ibDrawCallDict)
 {
     public Dictionary<string, List<string>>? CollectVBFile()
     {        

@@ -4,7 +4,7 @@ using System.Windows.Controls.Ribbon;
 
 namespace NMC.Helpers;
 
-public record DrawCallCollector(string frameAnalysis)
+public class DrawCallCollector(string frameAnalysis)
 {
     public List<string>? CollectIBDrawCall(string ibHash)
     {

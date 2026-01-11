@@ -8,7 +8,7 @@ using System.Text;
 
 namespace NMC.Helpers;
 
-public record VBSemanticBlockCollector(string frameAnalysis, Dictionary<string, List<string>> vbFiles)
+public class VBSemanticBlockCollector(string frameAnalysis, Dictionary<string, List<string>> vbFiles)
 {
     private StreamBuilder streamBuilder = new StreamBuilder();
 
