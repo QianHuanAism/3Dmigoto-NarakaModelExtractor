@@ -11,5 +11,5 @@ public partial class FrameAnalysis : ObservableObject
     [ObservableProperty]
     private string? _frameAnalysisPath;
 
-    public bool IsValid => string.IsNullOrEmpty(FrameAnalysisPath) || Directory.Exists(FrameAnalysisPath);
+    public bool IsValid => string.IsNullOrEmpty(FrameAnalysisPath) || !Directory.Exists(FrameAnalysisPath);
 }

@@ -36,6 +36,7 @@ public class ModelExtractionService : IModelExtractionService
             return;
         }
         Log.Info(":: DrawIB 的绘制调用收集结束 ::");
+        Log.Info("=", 92);
 
         Log.Info(":: 开始收集绘制调用对应的 VB 文件 ::");
         VBCollector vbCollector = new VBCollector(frameAnalysisPath, _ibDrawCalls);
@@ -47,8 +48,12 @@ public class ModelExtractionService : IModelExtractionService
             return;
         }
         Log.Info(":: 收集绘制调用对应的 VB 文件结束 ::");
-        Log.Info(":: 开始分析 VB 文件::");
+        Log.Info("=", 92);
+        
+        Log.Info(":: 开始分析当前 DrawIB 对应的 VB 文件 ::");
         VBAnalyzer vbAnalyzer = new VBAnalyzer(frameAnalysisPath, _vbFiles);
         vbAnalyzer.Analyze();
+        Log.Info(":: 当前 DrawIB 对应的 VB 文件分析结束 ::");
+        Log.Info("=", 92);
     }
 }

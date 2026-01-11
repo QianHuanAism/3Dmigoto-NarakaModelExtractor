@@ -39,7 +39,7 @@ public class ModelExtractionAssertionService : IModelExtractionAssertionService
             }
         }
 
-        if (frameAnalysis.IsValid)
+         if (frameAnalysis.IsValid)
         {
             MessageHelper.Show("请先选择FrameAnalysis文件夹!");
             Log.Info(" FrameAnalysisPath 为空或不存在, 提取结束!");

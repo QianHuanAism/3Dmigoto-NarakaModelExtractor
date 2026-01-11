@@ -33,18 +33,21 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ExtractModel()
     {
-        // XXX: 仅为测试用例, 实际发布是会注释掉
-        //ExtractTestCode();
+        // XXX: 仅为测试用例, 实际发布时会注释掉
+        ExtractTestCode();
 
         Log.Info(":: 模型提取开始 ::");
 
         // 如果断言不通过, 则直接结束提取
         if(!_extractionAssertionService.CanExtract(FrameAnalysis, DrawIBList))
+        {
+            Log.Info(":: 模型提取失败, 提取逻辑结束 ::");
             return;
+        }
 
         foreach (var drawIB in DrawIBList)
         {
-            _extractionService.Extract(FrameAnalysis.FrameAnalysisPath, drawIB.IBHash);
+            _extractionService.Extract(FrameAnalysis.FrameAnalysisPath!, drawIB.IBHash);
         }
     }
 
