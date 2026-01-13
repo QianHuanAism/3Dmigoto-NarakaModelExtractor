@@ -18,14 +18,8 @@ public partial class MainViewModel : ObservableObject
 {
     public ObservableCollection<DrawIB> DrawIBList { get; } = new ObservableCollection<DrawIB>();
     public FrameAnalysis FrameAnalysis { get; } = new FrameAnalysis();
-    private readonly IModelExtractionService _extractionService;
-    private readonly IModelExtractionAssertionService _extractionAssertionService;
-
-    public MainViewModel()
-    {
-        _extractionAssertionService = new ModelExtractionAssertionService();
-        _extractionService = new ModelExtractionService();
-    }
+    private IModelExtractionService? _extractionService;
+    private IModelExtractionAssertionService? _extractionAssertionService;
 
     /// <summary>
     /// 提取模型
@@ -35,22 +29,23 @@ public partial class MainViewModel : ObservableObject
     {
         // XXX: 仅为测试用例, 实际发布时会注释掉
         ExtractTestCode();
-
         Log.Info("-", 66);
         Log.Info("模型提取开始");
         Log.Info($"FrameAnalysis文件夹路径: {FrameAnalysis.FrameAnalysisPath}");
 
+        _extractionAssertionService = new ModelExtractionAssertionService();
         // 如果断言不通过, 则直接结束提取
         if (!_extractionAssertionService.CanExtract(FrameAnalysis, DrawIBList))
         {
             Log.Info("模型提取失败, 提取逻辑结束");
             return;
         }
-
+        
+        _extractionService = new ModelExtractionService(FrameAnalysis.FrameAnalysisPath!);
         foreach (var drawIB in DrawIBList)
         {
             Log.Info($"当前DrawIB: {drawIB.IBHash}");
-            _extractionService.Extract(FrameAnalysis.FrameAnalysisPath!, drawIB.IBHash);
+            _extractionService.Extract(drawIB.IBHash);
         }
     }
 

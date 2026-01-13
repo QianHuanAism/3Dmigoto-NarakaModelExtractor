@@ -6,5 +6,5 @@ namespace NMC.Core;
 
 public interface IModelExtractionService
 {
-    void Extract(string frameAnalysisPath, string ibHash);
+    void Extract(string ibHash);
 }
