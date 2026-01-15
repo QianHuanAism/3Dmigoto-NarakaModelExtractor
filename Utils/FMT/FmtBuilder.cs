@@ -111,7 +111,7 @@ public class FmtBuilder
                 start++;
                 if (start == 0)
                 {
-                    current = DXGIFormat.DXGIFormapMaps[
+                    current = DXGIFormat.SemanticNameDXGIFormatMaps[
                         totalInputElementList[i + 2].Split(": ")[1]
                     ];
                     byteOffset = byteOffset + previousTotal;
@@ -120,7 +120,7 @@ public class FmtBuilder
                 }
                 else
                 {
-                    current = DXGIFormat.DXGIFormapMaps[
+                    current = DXGIFormat.SemanticNameDXGIFormatMaps[
                         totalInputElementList[i + 2].Split(": ")[1]
                     ];
                     byteOffset = byteOffset + previousTotal;
@@ -163,7 +163,7 @@ public class FmtBuilder
         {
             if (inputElement.StartsWith("Format: "))
             {
-                totalStride += DXGIFormat.DXGIFormapMaps[inputElement.Split(": ")[1]];
+                totalStride += DXGIFormat.SemanticNameDXGIFormatMaps[inputElement.Split(": ")[1]];
             }
         }
 

@@ -1,3 +1,6 @@
 <Solution>
+  <Folder Name="/解决方案项/">
+    <File Path=".csharpierrc.json" />
+  </Folder>
   <Project Path="NMC.csproj" />
 </Solution>

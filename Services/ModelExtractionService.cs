@@ -153,6 +153,7 @@ public class ModelExtractionService : IModelExtractionService
             ibTxtFiles,
             frameAnalysisPath!
         );
+
         List<string> fmtContentList = fmtBuilder.Build();
 
         // 写入.fmt文件

@@ -80,7 +80,7 @@ public class FmtFixer
         int offset = index + 2;
         string attributeName = inputElementList[offset].Split(": ")[0];
         string attributeValue = inputElementList[offset].Split(": ")[1];
-        return DXGIFormat.DXGIFormapMaps[attributeValue];
+        return DXGIFormat.SemanticNameDXGIFormatMaps[attributeValue];
     }
 
     private List<string> ReplaceErrorElement(List<string> inputElementList, string missingStride)

@@ -1,6 +1,6 @@
-﻿using NMC.Helpers;
-using System.IO;
+﻿using System.IO;
 using System.Text.RegularExpressions;
+using NMC.Helpers;
 
 namespace NMC.Utils.VB;
 
@@ -52,11 +52,10 @@ public class VBValidElementCollector
                     string semanticName = content.Split(": ")[0].Split(" ")[1];
                     string semanticValue = content.Split(": ")[1];
 
-                    if (
-                        semanticToValueMap.ContainsKey(semanticName)
-                        || semanticToValueMap.ContainsValue(semanticValue)
-                    )
+                    if (semanticToValueMap.ContainsKey(semanticName) || semanticToValueMap.ContainsValue(semanticValue))
+                    {
                         break;
+                    }
 
                     semanticToValueMap.Add(semanticName, semanticValue);
                 }
@@ -70,9 +69,7 @@ public class VBValidElementCollector
         return fileSemanticList;
     }
 
-    private Dictionary<string, string> GetSeamanticIndex(
-        Dictionary<string, string> semanticToValueMap
-    )
+    private Dictionary<string, string> GetSeamanticIndex(Dictionary<string, string> semanticToValueMap)
     {
         Dictionary<string, string> semanticIndexMap = new Dictionary<string, string>();
         string pattern = @"\d+\b";

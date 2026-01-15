@@ -2,7 +2,7 @@
 
 public class DXGIFormat
 {
-    public static Dictionary<string, int> DXGIFormapMaps { get; } = new Dictionary<string, int>()
+    public static Dictionary<string, int> DXGIFormatMaps { get; } = new Dictionary<string, int>()
     {
         { "R32G32B32A32_FLOAT", 16},
         { "R32G32B32A32_UINT", 16},
