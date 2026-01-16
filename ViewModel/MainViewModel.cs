@@ -49,6 +49,15 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ClearDrawIBList()
+    {
+        if (DrawIBList.Count > 0)
+        {
+            DrawIBList.Clear();
+        }
+    }
+
+    [RelayCommand]
     private void SelectFrameAnalysisFolder()
     {
         OpenFolderDialog folderDialog = new OpenFolderDialog();

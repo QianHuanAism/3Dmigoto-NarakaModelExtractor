@@ -52,7 +52,11 @@ public class VBValidElementCollector
                     string semanticName = content.Split(": ")[0].Split(" ")[1];
                     string semanticValue = content.Split(": ")[1];
 
-                    if (semanticToValueMap.ContainsKey(semanticName) || semanticToValueMap.ContainsValue(semanticValue))
+                    if (
+                        semanticToValueMap.ContainsKey(semanticName)
+                        || semanticToValueMap.ContainsValue(semanticValue)
+                        || semanticName.Equals("COLOR")
+                    )
                     {
                         break;
                     }

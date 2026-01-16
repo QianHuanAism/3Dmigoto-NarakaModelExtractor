@@ -18,7 +18,6 @@ public class ModelExtractionService : IModelExtractionService
     private VBInputElementCollector inputElementCollector = new VBInputElementCollector();
     private string? frameAnalysisPath;
     private string? outputPath;
-    private string? outputName;
 
     public ModelExtractionService(string frameAnalysisPath, string? outputPath)
     {
@@ -127,6 +126,12 @@ public class ModelExtractionService : IModelExtractionService
         LogFileAnalyzer logFileAnalyzer = new LogFileAnalyzer(logFilePath);
         List<string> cstFileList = new List<string>();
         cstFileList = logFileAnalyzer.AnalyzeLog(drawCallToVBHashMap);
+        if (cstFileList == null)
+        {
+            Log.Info($"未找到 IB {ibHash} 的原始姿态的绘制调用, 跳过此IB");
+            Log.Info("-", 66);
+            return;
+        }
 
         Log.Info($"分析 \"log.txt\" 文件结束");
         Log.Info("-", 66);
@@ -157,7 +162,7 @@ public class ModelExtractionService : IModelExtractionService
         List<string> fmtContentList = fmtBuilder.Build();
 
         // 写入.fmt文件
-        PathHelper pathHelper = new PathHelper(outputPath, ibHash);
+        PathHelper pathHelper = new PathHelper(outputPath!, ibHash);
         string writePath = pathHelper.GetWritePath();
         FmtWriter fmtWriter = new FmtWriter(writePath, ibHash);
         fmtWriter.Write(fmtContentList);
@@ -174,5 +179,6 @@ public class ModelExtractionService : IModelExtractionService
             ibHash
         );
         vbBuilder.BuildAndWriteVB(vbBufFiles, cstFileList, alias);
+        // 在提取完成以后打开一次日志文件, 因为可能有些IB未被提取, 要让用户知道是哪些IB
     }
 }

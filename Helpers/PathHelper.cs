@@ -13,12 +13,13 @@ public class PathHelper
         this.ibHash = ibHash;
     }
 
+    public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
+
     public string GetWritePath()
     {
-        string dirPath = Path.Combine(writePath, ibHash);
-        CreateLackingDirecotory(dirPath);
+        CreateLackingDirecotory(writePath);
 
-        return dirPath;
+        return writePath;
     }
 
     private void CreateLackingDirecotory(string dirPath)

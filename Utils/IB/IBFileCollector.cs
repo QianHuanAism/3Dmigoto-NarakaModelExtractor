@@ -5,7 +5,7 @@ namespace NMC.Utils.IB;
 
 public class IBFileCollector
 {
-    public Dictionary<string, List<string>> CollectTxtIBFile(
+    public Dictionary<string, List<string>>? CollectTxtIBFile(
         string frameAnalysisPath,
         Dictionary<string, List<string>> ibDrawCallMap
     )
@@ -41,7 +41,7 @@ public class IBFileCollector
         return ibFiles;
     }
 
-    public Dictionary<string, List<string>> CollectBufIBFile(
+    public Dictionary<string, List<string>>? CollectBufIBFile(
         string frameAnalysisPath,
         Dictionary<string, List<string>> ibDrawCallMap
     )

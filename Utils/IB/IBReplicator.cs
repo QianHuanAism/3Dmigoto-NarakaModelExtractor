@@ -14,7 +14,7 @@ public class IBReplicator
         this.copyPath = ibPath;
     }
 
-    public void CopyIBToOutput(Dictionary<string, List<string>> ibBufFiles, string alias)
+    public void CopyIBToOutput(Dictionary<string, List<string>> ibBufFiles, string? alias)
     {
         foreach (var ibHash in ibBufFiles.Keys)
         {

@@ -4,12 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:NMC"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        Title="NarakaModelExtractor - V1.0.1"
+        Title="NarakaModelExtractor - V1.0.0"
         Width="1280"
         Height="720"
         Icon="/Resources/Icon.ico"
         ThemeMode="Dark"
         mc:Ignorable="d">
+
+    <d:Window.DataContext>
+        <local:MainViewModel />
+    </d:Window.DataContext>
 
     <Grid>
         <MediaElement Name="backgroundVideo"
@@ -142,6 +146,16 @@
                     Command="{Binding ExtractModelCommand}"
                     Content="提取模型"
                     ToolTip="点击以后会根据DrawIB列表去依次提取模型"
+                    FontSize="15"
+                    Style="{DynamicResource AccentButtonStyle}" />
+
+            <Button Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="50,0,0,160"
+                    VerticalAlignment="Bottom"
+                    Command="{Binding ClearDrawIBListCommand}"
+                    Content="清空DrawIB列表"
+                    ToolTip="点击以后会清空DrawIB列表"
                     FontSize="15"
                     Style="{DynamicResource AccentButtonStyle}" />
 

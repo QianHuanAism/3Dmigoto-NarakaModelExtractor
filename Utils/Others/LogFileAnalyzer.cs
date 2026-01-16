@@ -1,6 +1,6 @@
-﻿using NMC.Helpers;
-using System.IO;
+﻿using System.IO;
 using System.Text.RegularExpressions;
+using NMC.Helpers;
 
 namespace NMC.Utils.Others;
 
@@ -42,6 +42,10 @@ public class LogFileAnalyzer
         foreach (var ibDrawCall in drawCallVBHashMap.Keys)
         {
             List<string> cstDrawCallList = GetCSTDrawCall(drawCallVBHashMap[ibDrawCall]);
+            if (cstDrawCallList == null)
+            {
+                return null;
+            }
             if (!cstDrawCalls.ContainsKey(drawCallVBHashMap[ibDrawCall]))
                 cstDrawCalls.Add(drawCallVBHashMap[ibDrawCall], cstDrawCallList);
         }
@@ -86,9 +90,7 @@ public class LogFileAnalyzer
         return cstFileList;
     }
 
-    public List<Dictionary<string, string>> GetCSTHash(
-        Dictionary<string, List<string>> cstDrawCalls
-    )
+    public List<Dictionary<string, string>> GetCSTHash(Dictionary<string, List<string>> cstDrawCalls)
     {
         List<Dictionary<string, string>> cstHashList = new List<Dictionary<string, string>>();
         foreach (var vbHash in cstDrawCalls.Keys)
@@ -146,10 +148,7 @@ public class LogFileAnalyzer
                                 var hash = resMacth.Groups["2"].Value.TrimStart();
                                 if (slotIdx < 2)
                                 {
-                                    if (!resourcesMap.ContainsKey($"t{slotIdx}"))
-                                    {
-                                        resourcesMap.Add($"t{slotIdx}", hash);
-                                    }
+                                    resourcesMap.Add($"t{slotIdx}", hash);
                                 }
                             }
                         }
@@ -166,6 +165,8 @@ public class LogFileAnalyzer
         return cstHashList;
     }
 
+    // 这里不应该返回多个, 因为即使有多个cs-t的DrawCall也应该只保留一个, 但是返回还是用一个列表去存吧
+    // 以免破坏后续的大部分逻辑
     private List<string> GetCSTDrawCall(string vbHash)
     {
         List<string> cstDrawCallList = new List<string>();
@@ -178,6 +179,16 @@ public class LogFileAnalyzer
                 if (!cstDrawCallList.Contains(cstDrawCall))
                     cstDrawCallList.Add(cstDrawCall);
             }
+        }
+
+        if (cstDrawCallList.Count <= 0)
+        {
+            return null;
+        }
+
+        if (cstDrawCallList.Count > 1)
+        {
+            cstDrawCallList.RemoveRange(1, cstDrawCallList.Count - 1);
         }
 
         return cstDrawCallList;

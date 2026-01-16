@@ -12,22 +12,21 @@ namespace NMC
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
+            
+            string logDirectory = Path.Combine(PathHelper.CurrentDirectory, "Logs");
+            string logFilePath = Path.Combine(logDirectory, $"{Log.TimeStamp}.log");
 
-            if (Log.LogList.Count <= 0)
+            if (!Directory.Exists(logDirectory))
             {
-                return;
+                Directory.CreateDirectory(logDirectory);
             }
 
-            string currentDir = Directory.GetCurrentDirectory();
-            string logDir = Path.Combine(currentDir, "Logs");
-            string logWritePath = Path.Combine(logDir, $"{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}-LOG.log");
-
-            if (!Directory.Exists(logDir))
+            if (!File.Exists(logFilePath))
             {
-                Directory.CreateDirectory(logDir);
+                using (File.Create(logFilePath)) { }
             }
 
-            File.WriteAllLines(logWritePath, Log.LogList);
+            File.WriteAllLines(logFilePath, Log.LogList);
         }
     }
 

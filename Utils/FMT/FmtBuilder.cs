@@ -1,12 +1,12 @@
-﻿using NMC.Helpers;
+﻿using System.IO;
+using Dumpify;
+using NMC.Helpers;
 using NMC.Model;
-using System.IO;
 
 namespace NMC.Utils.FMT;
 
 public class FmtBuilder
 {
-    private FmtFixer? fmtFixer;
     private Dictionary<string, string> vbStrides;
     private Dictionary<string, string> cstStrides;
     private List<Dictionary<string, List<string>>> vbInputElementList;
@@ -42,18 +42,10 @@ public class FmtBuilder
         vbInputElementList.Clear();
         vbInputElementList.Add(fixedFileElementMap);
         // 合并输入元素
-        List<string> totalInputElementList = MergeInputElement(
-            vbInputElementList,
-            cstInputElementList
-        );
+        List<string> totalInputElementList = MergeInputElement(vbInputElementList, cstInputElementList);
         string stride = GetTotalStride(totalInputElementList);
-        Dictionary<string, string> alignedByteOffsetMap = CalcAlignedByteOffset(
-            totalInputElementList
-        );
-        totalInputElementList = RebuildAlignedByteOffset(
-            totalInputElementList,
-            alignedByteOffsetMap
-        );
+        Dictionary<string, string> alignedByteOffsetMap = CalcAlignedByteOffset(totalInputElementList);
+        totalInputElementList = RebuildAlignedByteOffset(totalInputElementList, alignedByteOffsetMap);
         AddElementIndex(ref totalInputElementList);
         AddSpace(ref totalInputElementList);
         totalInputElementList = [.. GetIBFormat(), .. totalInputElementList];
@@ -67,6 +59,8 @@ public class FmtBuilder
         List<Dictionary<string, List<string>>> cstInputElementList
     )
     {
+        vbInputElementList.Dump();
+        cstInputElementList.Dump();
         List<string> totalInputElementList = new List<string>();
         foreach (var fileElementMap in vbInputElementList)
         {
@@ -88,8 +82,7 @@ public class FmtBuilder
         {
             if (totalInputElementList[i].StartsWith("InputSlot: "))
             {
-                totalInputElementList[i] = totalInputElementList[i]
-                    .Replace(totalInputElementList[i], "InputSlot: 0");
+                totalInputElementList[i] = totalInputElementList[i].Replace(totalInputElementList[i], "InputSlot: 0");
             }
         }
 
@@ -111,18 +104,14 @@ public class FmtBuilder
                 start++;
                 if (start == 0)
                 {
-                    current = DXGIFormat.SemanticNameDXGIFormatMaps[
-                        totalInputElementList[i + 2].Split(": ")[1]
-                    ];
+                    current = DXGIFormat.DXGIFormatMaps[totalInputElementList[i + 2].Split(": ")[1]];
                     byteOffset = byteOffset + previousTotal;
                     previousTotal = current;
                     alignedByteOffsetMap.Add(inputElement.Split(": ")[1], byteOffset.ToString());
                 }
                 else
                 {
-                    current = DXGIFormat.SemanticNameDXGIFormatMaps[
-                        totalInputElementList[i + 2].Split(": ")[1]
-                    ];
+                    current = DXGIFormat.DXGIFormatMaps[totalInputElementList[i + 2].Split(": ")[1]];
                     byteOffset = byteOffset + previousTotal;
                     previousTotal = current;
                     alignedByteOffsetMap.Add(inputElement.Split(": ")[1], byteOffset.ToString());
@@ -146,8 +135,7 @@ public class FmtBuilder
             {
                 if (inputElement.StartsWith($"SemanticName: {elementName}"))
                 {
-                    newTotalInputElementList[index + 4] =
-                        $"AlignedByteOffset: {alignedByteOffsetList[elementName]}";
+                    newTotalInputElementList[index + 4] = $"AlignedByteOffset: {alignedByteOffsetList[elementName]}";
                 }
             }
             index++;
@@ -163,7 +151,7 @@ public class FmtBuilder
         {
             if (inputElement.StartsWith("Format: "))
             {
-                totalStride += DXGIFormat.SemanticNameDXGIFormatMaps[inputElement.Split(": ")[1]];
+                totalStride += DXGIFormat.DXGIFormatMaps[inputElement.Split(": ")[1]];
             }
         }
 
@@ -228,19 +216,22 @@ public class FmtBuilder
         List<string> ibFormat = new List<string>();
         foreach (var ibHash in ibTxtFiles.Keys)
         {
-            using var fs = new StreamHelper().GetFileStream(
-                Path.Combine(frameAnalysisPath, ibTxtFiles[ibHash][0])
-            );
+            using var fs = new StreamHelper().GetFileStream(Path.Combine(frameAnalysisPath, ibTxtFiles[ibHash][0]));
             var sr = new StreamReader(fs);
-            string topology = "";
-            for (int i = 0; i < 4; i++)
+            string? line;
+            while ((line = sr.ReadLine()) != null)
             {
-                topology = sr.ReadLine();
-            }
+                if (line.StartsWith("topology: "))
+                {
+                    ibFormat.Add(line);
+                }
 
-            ibFormat.Add(topology);
-            string dataFormat = sr.ReadLine();
-            ibFormat.Add(dataFormat);
+                if (line.StartsWith("format: "))
+                {
+                    ibFormat.Add(line);
+                    break;
+                }
+            }
         }
 
         return ibFormat;

@@ -32,7 +32,7 @@ public class VBBuilder
     public void BuildAndWriteVB(
         Dictionary<string, List<string>> vbBufFiles,
         List<string> cstFileList,
-        string alias
+        string? alias
     )
     {
         #region TODO
@@ -65,7 +65,7 @@ public class VBBuilder
         Dictionary<string, string> cstStrides,
         Dictionary<string, string> vbVertexCounts,
         List<string> ValidFileList,
-        string alias
+        string? alias
     )
     {
         int currentVBVertexCount = 0;
