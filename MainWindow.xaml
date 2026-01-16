@@ -159,14 +159,14 @@
                     FontSize="15"
                     Style="{DynamicResource AccentButtonStyle}" />
 
-            <CheckBox Grid.Row="3"
+            <!--<CheckBox Grid.Row="3"
                       Grid.Column="0"
                       Margin="150,35,0,0"
                       VerticalAlignment="Top"
                       ToolTip="勾选后则会在提取时将贴图也提取出来"
                       IsEnabled="False"
                       Content="提取贴图 (暂时无法使用)"
-                      FontSize="15" />
+                      FontSize="15" />-->
         </Grid>
     </Grid>
 </Window>
